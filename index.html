@@ -1,0 +1,120 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dryer Chamber Temperature Monitor</title>
+    <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: 'Inter', system-ui, sans-serif;
+            background: #0a0f1d;
+            color: #f1f5f9;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 24px;
+        }
+        .portal-card {
+            background: rgba(15, 23, 42, 0.85);
+            border: 1px solid rgba(0, 255, 204, 0.25);
+            border-radius: 16px;
+            padding: 40px 32px;
+            max-width: 540px;
+            width: 100%;
+            text-align: center;
+            backdrop-filter: blur(12px);
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.6);
+        }
+        .portal-badge {
+            display: inline-block;
+            padding: 4px 12px;
+            font-size: 0.75rem;
+            font-family: 'Share Tech Mono', monospace;
+            background: rgba(0, 255, 204, 0.1);
+            color: #00ffcc;
+            border: 1px solid rgba(0, 255, 204, 0.3);
+            border-radius: 999px;
+            margin-bottom: 20px;
+            letter-spacing: 1.5px;
+        }
+        h1 {
+            font-family: 'Share Tech Mono', monospace;
+            font-size: 1.5rem;
+            color: #00ffcc;
+            letter-spacing: 2px;
+            margin-bottom: 8px;
+            line-height: 1.3;
+        }
+        p.subtitle {
+            color: #94a3b8;
+            font-size: 0.9rem;
+            margin-bottom: 32px;
+            font-family: 'Inter', sans-serif;
+        }
+        .units-list {
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+            margin-bottom: 24px;
+        }
+        .unit-btn {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: rgba(30, 41, 59, 0.7);
+            border: 1px solid rgba(0, 255, 204, 0.2);
+            padding: 16px 20px;
+            border-radius: 10px;
+            color: #f8fafc;
+            text-decoration: none;
+            font-family: 'Share Tech Mono', monospace;
+            font-size: 1.05rem;
+            transition: all 0.25s ease;
+        }
+        .unit-btn:hover {
+            background: rgba(0, 255, 204, 0.15);
+            border-color: #00ffcc;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0, 255, 204, 0.2);
+            color: #00ffcc;
+        }
+        .unit-tag {
+            font-size: 0.75rem;
+            background: rgba(0, 255, 204, 0.15);
+            color: #00ffcc;
+            padding: 2px 8px;
+            border-radius: 4px;
+        }
+        .footer-note {
+            font-size: 0.78rem;
+            color: #64748b;
+            font-family: 'Share Tech Mono', monospace;
+        }
+    </style>
+</head>
+<body>
+    <div class="portal-card">
+        <div class="portal-badge">MONITORING PORTAL</div>
+        <h1>DRYER CHAMBER TEMPERATURE MONITOR</h1>
+        <p class="subtitle">Select monitoring unit to view live telemetry and chamber analytics</p>
+
+        <div class="units-list">
+            <a href="unit1/" class="unit-btn">
+                <span>📊 UNIT 1 MONITOR</span>
+                <span class="unit-tag">ONLINE</span>
+            </a>
+            <!-- Additional units (e.g. unit2/, unit3/) can be added here -->
+        </div>
+
+        <div class="footer-note">
+            SECURE CLOUD TELEMETRY &bull; CONTINUOUS SCANNING
+        </div>
+    </div>
+</body>
+</html>
+
+
