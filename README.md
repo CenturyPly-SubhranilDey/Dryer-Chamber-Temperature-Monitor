@@ -1,4 +1,4 @@
-# 🌡️ Dryer Chamber Temperature Monitor
+﻿# 🌡️ Dryer Chamber Temperature Monitor
 
 > **Industrial Multi-Chamber Thermal Telemetry & Real-Time Monitoring System**
 
