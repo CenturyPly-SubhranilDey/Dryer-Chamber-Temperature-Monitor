@@ -1,4 +1,4 @@
-﻿param (
+param (
     [Parameter(Mandatory=$true)]
     [int]$UnitNumber,
 
@@ -31,14 +31,40 @@ $destFile = Join-Path $targetDir "index.html"
 $newContent | Out-File -FilePath $destFile -Encoding utf8
 Write-Host "✅ Created $destFile with GAS URL: $GasUrl" -ForegroundColor Green
 
-# Update root index.html to add the new unit button if not already present
+# Update root index.html to add the new unit button & JS config if not already present
 $rootIndex = Join-Path $scriptDir "index.html"
 if (Test-Path $rootIndex) {
     $rootContent = Get-Content -Raw $rootIndex -Encoding utf8
     $needle = "unit$UnitNumber/"
     if ($rootContent -notmatch $needle) {
-        $btnHtml = "            <a href=`"unit$UnitNumber/`" class=`"unit-btn`">`n                <span>📊 UNIT $UnitNumber MONITOR</span>`n                <span class=`"unit-tag`">ONLINE</span>`n            </a>`n            <!-- Additional units (e.g. unit2/, unit3/) can be added here -->"
-        $rootContent = $rootContent.Replace("<!-- Additional units (e.g. unit2/, unit3/) can be added here -->", $btnHtml)
+        $btnHtml = @"
+            <!-- Unit $UnitNumber -->
+            <a href="unit$UnitNumber/" class="unit-btn" id="btn-unit$UnitNumber">
+                <div class="unit-info">
+                    <span class="unit-title">📊 UNIT $UnitNumber MONITOR</span>
+                    <span class="unit-meta" id="meta-unit$UnitNumber">Connecting telemetry...</span>
+                </div>
+                <div class="unit-status-wrap">
+                    <span class="unit-tag checking" id="tag-unit$UnitNumber">CHECKING...</span>
+                </div>
+            </a>
+            <!-- Additional units (e.g. unit3/, unit4/) can be added here -->
+"@
+        $rootContent = $rootContent.Replace("<!-- Additional units (e.g. unit3/, unit4/) can be added here -->", $btnHtml)
+
+        $jsEntry = @"
+            {
+                id: 'unit$UnitNumber',
+                name: 'UNIT $UnitNumber MONITOR',
+                path: 'unit$UnitNumber/',
+                defaultGasUrl: '$GasUrl'
+            },
+            // NEXT_UNIT_CONFIG
+"@
+        if ($rootContent -match "// NEXT_UNIT_CONFIG") {
+            $rootContent = $rootContent.Replace("// NEXT_UNIT_CONFIG", $jsEntry)
+        }
+
         $rootContent | Out-File -FilePath $rootIndex -Encoding utf8
         Write-Host "✅ Added Unit $UnitNumber to root portal ($rootIndex)" -ForegroundColor Cyan
     }
