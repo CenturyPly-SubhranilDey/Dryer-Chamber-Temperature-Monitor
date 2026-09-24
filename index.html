@@ -263,15 +263,15 @@
             return Math.floor(diffSec / 86400) + 'd ago';
         }
 
-        // Universal GAS API Caller (Direct Fetch with JSONP Fallback)
-        function fetchGasJsonp(url) {
+        // Fast & Robust JSONP caller (with 15-second timeout)
+        function fetchGasJsonp(url, timeoutMs = 15000) {
             return new Promise((resolve, reject) => {
                 const callbackName = 'portal_cb_' + Date.now() + '_' + Math.floor(Math.random() * 100000);
                 const script = document.createElement('script');
                 const timer = setTimeout(() => {
                     cleanup();
                     reject(new Error('Timeout'));
-                }, 8000);
+                }, timeoutMs);
 
                 function cleanup() {
                     clearTimeout(timer);
@@ -296,27 +296,17 @@
         }
 
         async function fetchUnitData(gasUrl) {
-            const endpoint = gasUrl + (gasUrl.includes('?') ? '&' : '?') + 'action=getDashboardData';
+            // Use action=getMeta which is ultra-fast & lightweight (reads Status sheet directly)
+            const endpoint = gasUrl + (gasUrl.includes('?') ? '&' : '?') + 'action=getMeta&t=' + Date.now();
+            
+            // Try JSONP with automatic retry
             try {
-                const controller = new AbortController();
-                const timeoutId = setTimeout(() => controller.abort(), 6500);
-                const resp = await fetch(endpoint, {
-                    method: 'GET',
-                    redirect: 'follow',
-                    cache: 'no-store',
-                    signal: controller.signal
-                });
-                clearTimeout(timeoutId);
-                if (resp && (resp.ok || resp.status === 200)) {
-                    const text = await resp.text();
-                    if (text && (text.trim().startsWith('{') || text.trim().startsWith('['))) {
-                        return JSON.parse(text);
-                    }
-                }
-            } catch (e) {
-                // Fetch failed or timed out, attempt JSONP fallback
+                return await fetchGasJsonp(endpoint, 15000);
+            } catch (err1) {
+                // Retry once with fresh cache buster
+                const retryEndpoint = gasUrl + (gasUrl.includes('?') ? '&' : '?') + 'action=getMeta&t=' + (Date.now() + 1);
+                return await fetchGasJsonp(retryEndpoint, 15000);
             }
-            return await fetchGasJsonp(endpoint);
         }
 
         async function checkUnit(unit) {
@@ -324,20 +314,22 @@
             const metaEl = document.getElementById('meta-' + unit.id);
             if (!tagEl) return;
 
-            // Check if user has a custom GAS URL saved in localStorage for this path
-            const storageKey = 'CUSTOM_GAS_URL_' + (('/' + unit.path).replace(/[^a-zA-Z0-9]/g, '_'));
-            const customUrl = localStorage.getItem(storageKey);
-            const gasUrl = (customUrl && customUrl.startsWith('http')) ? customUrl : unit.defaultGasUrl;
+            const gasUrl = unit.defaultGasUrl;
 
             try {
-                const data = await fetchUnitData(gasUrl);
-                const parsed = (typeof data === 'string') ? JSON.parse(data) : data;
+                let data = await fetchUnitData(gasUrl);
+                if (typeof data === 'string') {
+                    try { data = JSON.parse(data); } catch(e) {}
+                }
+                if (typeof data === 'string') {
+                    try { data = JSON.parse(data); } catch(e) {}
+                }
 
                 let isOnline = false;
                 let latestDate = null;
 
-                if (parsed && parsed.meters && parsed.meters.length > 0) {
-                    for (const m of parsed.meters) {
+                if (data && data.meters && data.meters.length > 0) {
+                    for (const m of data.meters) {
                         if (m.lastUpdated) {
                             const d = new Date(m.lastUpdated);
                             if (!isNaN(d.getTime())) {
@@ -350,10 +342,10 @@
                     }
                 }
 
-                // If last transmission was received within 5 minutes (300s), confirm online
+                // Verify timestamp freshness: within 5 minutes (300,000 ms)
                 if (latestDate && (Date.now() - latestDate.getTime()) <= 300000) {
                     isOnline = true;
-                } else {
+                } else if (!latestDate || (Date.now() - latestDate.getTime()) > 300000) {
                     isOnline = false;
                 }
 
