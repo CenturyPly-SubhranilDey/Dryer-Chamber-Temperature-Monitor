@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes">
-    <title>Dryer Chamber Temperature Monitor</title>
+    <title>Dryer Chamber Temperature Monitor - Unit 1 (Guwahati)</title>
     <!-- Online Monitoring Scripts -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/luxon@3.4.4/build/global/luxon.min.js"></script>
@@ -3561,7 +3561,7 @@ body:not(.light-mode) input[type="time"]::-webkit-calendar-picker-indicator {
         <header>
             <div class="header-left">
                 <div>
-                    <div class="logo" id="headerPlantTitle">DRYER CHAMBER TEMPERATURE MONITOR</div>
+                    <div class="logo" id="headerPlantTitle">DRYER CHAMBER TEMPERATURE MONITOR - UNIT 1 (GUWAHATI)</div>
                     <div class="subtitle">DRYER TEMPERATURE MONITORING & ANALYTICS</div>
                 </div>
             </div>
@@ -4797,10 +4797,10 @@ body:not(.light-mode) input[type="time"]::-webkit-calendar-picker-indicator {
         // Sites throughout the app — written for the old multi-plant build — keep
         // working completely unchanged.
         const DEFAULT_GAS_URL = 'https://script.google.com/macros/s/AKfycbyPCz4nLKpPu33zG4Ue5fDuzQrU37dhlCpDZxt-qcCxQiKj_1FUjdyGGy13l8pehrVijQ/exec';
-        // Path-isolated storage key so multiple units (/unit1/, /unit2/) on the same GitHub domain never collide
-        const STORAGE_KEY = 'CUSTOM_GAS_URL_' + (window.location.pathname.replace(/[^a-zA-Z0-9]/g, '_') || 'default');
-        let savedGasUrl = localStorage.getItem(STORAGE_KEY) || localStorage.getItem('CUSTOM_GAS_URL');
-        const GAS_URL = (savedGasUrl && savedGasUrl.startsWith('http')) ? savedGasUrl : DEFAULT_GAS_URL;
+        let savedGasUrl = localStorage.getItem('CUSTOM_GAS_URL');
+        let rawGasUrl = '<?= scriptUrl ?>';
+        const GAS_URL = (savedGasUrl && savedGasUrl.startsWith('http')) ? savedGasUrl :
+                        ((rawGasUrl && !rawGasUrl.includes('<%') && rawGasUrl.startsWith('http')) ? rawGasUrl : DEFAULT_GAS_URL);
         let sheetUrls = { main: GAS_URL };
 
         // ── UNIVERSAL GAS API CALLER (Supports Fetch + CORS + JSONP fallback) ──
@@ -6520,7 +6520,7 @@ function buildGappedDataset(rows, colIdx, gapThreshMs) {
 
             if (data.plantName) {
                 const titleEl = document.getElementById('headerPlantTitle');
-                if (titleEl) titleEl.textContent = 'DRYER CHAMBER TEMPERATURE MONITOR';
+                if (titleEl) titleEl.textContent = 'DRYER CHAMBER TEMPERATURE MONITOR - UNIT 1 (GUWAHATI)';
             }
 
             if (data.thresholds) thresholdData = Object.assign(thresholdData, data.thresholds);
@@ -11326,13 +11326,11 @@ ${buildAiDataContext()}`;
                     if (i === retries) throw new Error('HTTP ' + resp.status);
                 } catch (e) {
                     if (i === retries) {
-                        // Final retry failed — try JSONP fallback (works from file://)
                         try {
                             const data = await fetchGasJsonp(url);
-                            // Wrap in a Response-like object so callers can .json()/.text()
                             return { ok: true, status: 200, json: () => Promise.resolve(data), text: () => Promise.resolve(JSON.stringify(data)) };
                         } catch (jp) {
-                            throw e; // throw original error if JSONP also fails
+                            throw e;
                         }
                     }
                     await new Promise(r => setTimeout(r, 1000 * (i + 1)));
